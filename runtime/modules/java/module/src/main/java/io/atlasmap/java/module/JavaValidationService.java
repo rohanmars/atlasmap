@@ -35,6 +35,7 @@ import io.atlasmap.java.v2.JavaField;
 import io.atlasmap.spi.AtlasConversionInfo;
 import io.atlasmap.spi.AtlasModuleDetail;
 import io.atlasmap.spi.AtlasValidator;
+import io.atlasmap.v2.ConstantField;
 import io.atlasmap.v2.Field;
 import io.atlasmap.v2.FieldType;
 import io.atlasmap.v2.Validation;
@@ -158,7 +159,7 @@ public class JavaValidationService extends BaseModuleValidationService<JavaField
     }
 
     @Override
-    protected void validateModuleField(String mappingId, JavaField field, FieldDirection direction, List<Validation> validations) {
+    protected void validateModuleField(String mappingId, Field field, FieldDirection direction, List<Validation> validations) {
         validatorMap.get("java.field.type.not.null").validate(field, validations, mappingId, ValidationStatus.WARN);
         if (direction == FieldDirection.INPUT) {
             validatorMap.get("input.field.type.not.null").validate(field.getFieldType(), validations,
@@ -171,7 +172,9 @@ public class JavaValidationService extends BaseModuleValidationService<JavaField
             validatorMap.get("java.field.path.not.null").validate(field.getPath(), validations, mappingId);
         }
 
-        validateClass(mappingId, field, validations);
+        if (field instanceof JavaField) {
+        	validateClass(mappingId, (JavaField)field, validations);
+        }
     }
 
     private void validateClass(String mappingId, JavaField field, List<Validation> validations) {

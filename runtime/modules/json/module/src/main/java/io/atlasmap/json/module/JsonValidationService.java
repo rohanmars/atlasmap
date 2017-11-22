@@ -24,6 +24,7 @@ import io.atlasmap.core.BaseModuleValidationService;
 import io.atlasmap.json.v2.JsonField;
 import io.atlasmap.spi.AtlasModuleDetail;
 import io.atlasmap.spi.AtlasValidator;
+import io.atlasmap.v2.Field;
 import io.atlasmap.v2.Validation;
 import io.atlasmap.v2.ValidationScope;
 import io.atlasmap.v2.ValidationStatus;
@@ -75,7 +76,7 @@ public class JsonValidationService extends BaseModuleValidationService<JsonField
     }
 
     @Override
-    protected void validateModuleField(String mappingId, JsonField field, FieldDirection direction, List<Validation> validations) {
+    protected void validateModuleField(String mappingId, Field field, FieldDirection direction, List<Validation> validations) {
         // TODO check that it is a valid type on the AtlasContext
 
         validatorMap.get("json.field.type.not.null").validate(field, validations, mappingId, ValidationStatus.WARN);

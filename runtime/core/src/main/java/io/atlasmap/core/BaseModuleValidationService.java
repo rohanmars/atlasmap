@@ -30,17 +30,19 @@ import io.atlasmap.spi.AtlasModuleDetail;
 import io.atlasmap.spi.AtlasModuleMode;
 import io.atlasmap.v2.AtlasMapping;
 import io.atlasmap.v2.BaseMapping;
+import io.atlasmap.v2.ConstantField;
 import io.atlasmap.v2.DataSource;
 import io.atlasmap.v2.Field;
 import io.atlasmap.v2.FieldType;
 import io.atlasmap.v2.Mapping;
 import io.atlasmap.v2.MappingType;
+import io.atlasmap.v2.PropertyField;
 import io.atlasmap.v2.Validation;
 import io.atlasmap.v2.ValidationScope;
 import io.atlasmap.v2.ValidationStatus;
 
 public abstract class BaseModuleValidationService<T extends Field> implements AtlasValidationService {
-
+	
     private AtlasConversionService conversionService;
     private AtlasModuleMode mode;
 
@@ -221,10 +223,22 @@ public abstract class BaseModuleValidationService<T extends Field> implements At
             outputFields.forEach(outField -> validateField(mappingId, outField, FieldDirection.OUTPUT, validations));
         }
     }
+    
+    protected boolean isCoreField(Field field) {
+    	boolean isCore = false;
+    	String fieldClassName = field.getClass().getName();
+    	if (fieldClassName.equals(PropertyField.class.getName())) {
+    		isCore = true;
+    	} else if (fieldClassName.equals(ConstantField.class.getName())) {
+    		isCore = true;
+    	}
+    	
+    	return isCore;
+    }
 
     @SuppressWarnings("unchecked")
     protected void validateField(String mappingId, Field field, FieldDirection direction, List<Validation> validations) {
-        if (field == null || !getFieldType().isAssignableFrom(field.getClass())) {
+        if (field == null || (!isCoreField(field) && !getFieldType().isAssignableFrom(field.getClass()))) {
             Validation validation = new Validation();
             validation.setScope(ValidationScope.MAPPING);
             validation.setId(mappingId);
@@ -233,13 +247,13 @@ public abstract class BaseModuleValidationService<T extends Field> implements At
             validation.setStatus(ValidationStatus.ERROR);
             validations.add(validation);
         } else {
-            validateModuleField(mappingId, (T)field, direction, validations);
+            validateModuleField(mappingId, field, direction, validations);
         }
     }
 
     protected abstract Class<T> getFieldType();
 
-    protected abstract void validateModuleField(String mappingId, T field, FieldDirection direction, List<Validation> validation);
+    protected abstract void validateModuleField(String mappingId, Field field, FieldDirection direction, List<Validation> validation);
 
     protected void validateSourceAndTargetTypes(String mappingId, Field inputField, Field outField, List<Validation> validations) {
         if (inputField.getFieldType() != outField.getFieldType()) {
